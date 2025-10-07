@@ -1,0 +1,106 @@
+
+
+🗳️ مرحله: سیستم رأی‌گیری برای Gamehub-token
+
+✅ ساخت مدل رأی
+
+// models/Vote.ts
+import mongoose from 'mongoose';
+
+const VoteSchema = new mongoose.Schema({
+  proposal: String,
+  options: [String],
+  votes: [{ accountId: mongoose.Schema.Types.ObjectId, choice: String }],
+});
+
+export default mongoose.models.Vote || mongoose.model('Vote', VoteSchema);
+
+✅ API ثبت رأی
+
+// pages/api/vote.ts
+import Vote from '../../models/Vote';
+import { connectDB } from '../../lib/db';
+
+export default async function handler(req, res) {
+  await connectDB();
+
+  if (req.method === 'POST') {
+    const { proposalId, accountId, choice } = req.body;
+    const vote = await Vote.findById(proposalId);
+    vote.votes.push({ accountId, choice });
+    await vote.save();
+    return res.status(200).json({ success: true });
+  }
+
+  res.status(405).end();
+}
+
+🛒 مرحله: marketplace داخلی
+
+✅ مدل آیتم‌های قابل خرید
+
+// models/Item.ts
+import mongoose from 'mongoose';
+
+const ItemSchema = new mongoose.Schema({
+  name: String,
+  price: Number,
+  imageUrl: String,
+  description: String,
+  owner: mongoose.Schema.Types.ObjectId,
+});
+
+export default mongoose.models.Item || mongoose.model('Item', ItemSchema);
+
+✅ نمایش آیتم‌ها در marketplace
+
+function Marketplace() {
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/items').then(res => res.json()).then(data => setItems(data.items));
+  }, []);
+
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      {items.map(item => (
+        <div key={item._id} className="bg-gray-900 p-4 rounded">
+          <img src={item.imageUrl} className="rounded mb-2" />
+          <h3 className="text-white">{item.name}</h3>
+          <p className="text-green-400">{item.price} GHT</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+🧬 مرحله: اتصال به IPFS برای ذخیره NFTها
+
+✅ استفاده از nft.storage
+
+npm install nft.storage
+
+import { NFTStorage, File } from 'nft.storage';
+
+const client = new NFTStorage({ token: process.env.NFT_STORAGE_KEY });
+
+export async function uploadToIPFS(imageBuffer: Buffer, name: string, description: string) {
+  const metadata = await client.store({
+    name,
+    description,
+    image: new File([imageBuffer], 'nft.png', { type: 'image/png' }),
+  });
+
+  return metadata.url;
+}
+
+🦁 مرحله: splash انیمیشنی با لوگوی Cyber-Lion
+
+function CyberSplash() {
+  return (
+    <div className="fixed inset-0 bg-black flex items-center justify-center z-50 animate-fade-in">
+      <img src="/cyber-lion.gif" alt="Cyber Lion" className="w-48 h-48 animate-bounce" />
+      <h2 className="text-green-400 text-xl mt-4">در حال بارگذاری Gamehub Vault...</h2>
+    </div>
+  );
+}
