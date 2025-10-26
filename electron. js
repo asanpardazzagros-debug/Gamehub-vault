@@ -1,0 +1,121 @@
+const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const path = require('path');
+const isDev = require('electron-is-dev');
+
+let mainWindow;
+
+function createWindow() {
+  // ایجاد پنجره اصلی
+  mainWindow = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    minWidth: 1200,
+    minHeight: 800,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      webSecurity: false
+    },
+    icon: path.join(__dirname, 'public/icon.png'),
+    titleBarStyle: 'default',
+    show: false,
+    backgroundColor: '#1e1b4b'
+  });
+
+  // بارگذاری برنامه
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(path.join(__dirname, 'out/index.html'));
+  }
+
+  // نمایش پنجره وقتی آماده شد
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
+  // منوی اصلی
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Exit',
+          accelerator: 'CmdOrCtrl+Q',
+          click: () => app.quit()
+        }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'GameHub',
+      submenu: [
+        {
+          label: 'About GameHub Token',
+          click: () => {
+            require('electron').dialog.showMessageBox(mainWindow, {
+              type: 'info',
+              title: 'About',
+              message: 'GameHub Token Desktop',
+              detail: 'Crypto Gaming Platform v1.0.0'
+            });
+          }
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
+// رویدادهای اصلی Electron
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+
+// ارتباط با رندرر
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
+
+ipcMain.handle('minimize-window', () => {
+  mainWindow.minimize();
+});
+
+ipcMain.handle('maximize-window', () => {
+  if (mainWindow.isMaximized()) {
+    mainWindow.unmaximize();
+  } else {
+    mainWindow.maximize();
+  }
+});
+
+ipcMain.handle('close-window', () => {
+  mainWindow.close();
+});
