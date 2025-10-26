@@ -1,4 +1,4 @@
-
+https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge
 📁 پروژه کامل GameHub Token برای دسکتاپ
 
 ساختار جدید:
