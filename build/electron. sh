@@ -1,0 +1,61 @@
+#!/bin/bash
+
+echo " "
+echo "🖥️  ===================================="
+echo "🎮 GAMEHUB TOKEN - DESKTOP BUILDER"
+echo "🖥️  ===================================="
+echo " "
+
+# Check Node.js
+if ! command -v node &> /dev/null; then
+    echo "❌ Node.js is not installed!"
+    exit 1
+fi
+
+echo "✅ Node.js version: $(node --version)"
+
+# Install dependencies
+echo " "
+echo "📦 Installing dependencies..."
+npm install
+
+if [ $? -ne 0 ]; then
+    echo "❌ npm install failed!"
+    exit 1
+fi
+
+# Build Next.js
+echo " "
+echo "🔨 Building Next.js project..."
+npm run build
+
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed!"
+    exit 1
+fi
+
+# Install Electron dependencies
+echo " "
+echo "⚡ Installing Electron dependencies..."
+npm install electron electron-builder electron-is-dev --save-dev
+
+# Build Electron app
+echo " "
+echo "🏗️  Building Desktop Application..."
+npm run build-electron
+
+if [ $? -eq 0 ]; then
+    echo " "
+    echo "✅ ===================================="
+    echo "🎉 DESKTOP APP BUILT SUCCESSFULLY!"
+    echo "✅ ===================================="
+    echo " "
+    echo "📁 Output files in: ./dist/"
+    echo " "
+    echo "🚀 To run in development:"
+    echo "   npm run electron-dev"
+    echo " "
+else
+    echo "❌ Build failed!"
+    exit 1
+fi
