@@ -1,0 +1,62 @@
+@echo off
+echo.
+echo 🖥️  ====================================
+echo 🎮 GAMEHUB TOKEN - WINDOWS BUILDER
+echo 🖥️  ====================================
+echo.
+
+:: Check Node.js
+node --version >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Node.js is not installed!
+    pause
+    exit /b 1
+)
+
+echo ✅ Node.js version:
+node --version
+
+echo.
+echo 📦 Installing dependencies...
+npm install
+
+if errorlevel 1 (
+    echo ❌ npm install failed!
+    pause
+    exit /b 1
+)
+
+echo.
+echo 🔨 Building Next.js project...
+npm run build
+
+if errorlevel 1 (
+    echo ❌ Build failed!
+    pause
+    exit /b 1
+)
+
+echo.
+echo ⚡ Installing Electron dependencies...
+npm install electron electron-builder electron-is-dev --save-dev
+
+echo.
+echo 🏗️  Building Windows Application...
+npm run build-win
+
+if errorlevel 0 (
+    echo.
+    echo ✅ ====================================
+    echo 🎉 WINDOWS APP BUILT SUCCESSFULLY!
+    echo ✅ ====================================
+    echo.
+    echo 📁 Output files in: ./dist/
+    echo.
+    echo 🚀 To run in development:
+    echo    npm run electron-dev
+    echo.
+) else (
+    echo ❌ Build failed!
+)
+
+pause
