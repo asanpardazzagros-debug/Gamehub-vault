@@ -1,684 +1,400 @@
-https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badgehttps://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge
-📁 پروژه کامل GameHub Token برای دسکتاپ
+مستند نصب و راه‌اندازی پروژه GameHub Vault
 
-ساختار جدید:
+https://img.shields.io/badge/GameHub-Vault-blue?style=for-the-badge
+https://img.shields.io/badge/Next.js-13-black?style=for-the-badge
+https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge
 
-```
-gamehub-token-desktop/
-├── 📄 package.json
-├── 📄 electron.js
-├── 📄 main.js
-├── 📄 next.config.js
-├── 📄 build-electron.sh
-├── 📄 build-windows.bat
-├── 📄 README.md
-├── 📁 public/
-│   ├── 📄 manifest.json
-│   ├── 🖼️ icon.ico
-│   ├── 🖼️ icon.png
-│   └── 🖼️ icon.icns
-└── 📁 pages/
-    └── 📄 index.tsx
-```
+فهرست مطالب
 
----
+· معرفی پروژه
+· پیش‌نیازها
+· نصب و راه‌اندازی
+· پیکربندی
+· اجرا
+· تست
+· استقرار
+· عیب‌یابی
 
-1. فایل package.json (آپدیت شده برای Electron):
+معرفی پروژه
 
-```json
-{
-  "name": "gamehub-token-desktop",
-  "version": "1.0.0",
-  "description": "GameHub Token Desktop App - Crypto Gaming Platform",
-  "main": "electron.js",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build && next export",
-    "start": "next start",
-    "electron": "electron .",
-    "electron-dev": "electron . --dev",
-    "build-electron": "npm run build && electron-builder",
-    "build-win": "npm run build && electron-builder --win",
-    "build-mac": "npm run build && electron-builder --mac",
-    "build-linux": "npm run build && electron-builder --linux",
-    "dist": "npm run build && electron-builder --publish=never"
-  },
-  "dependencies": {
-    "next": "13.5.6",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "electron": "^22.0.0",
-    "electron-is-dev": "^2.0.0"
-  },
-  "devDependencies": {
-    "electron-builder": "^24.0.0",
-    "typescript": "^5.0.4",
-    "@types/react": "^18.2.0",
-    "@types/node": "^20.0.0"
-  },
-  "build": {
-    "appId": "com.gamehub.token.desktop",
-    "productName": "GameHub Token",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "out/**/*",
-      "electron.js",
-      "main.js"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "public/icon.ico"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "public/icon.icns"
-    },
-    "linux": {
-      "target": "AppImage",
-      "icon": "public/icon.png"
-    }
-  },
-  "keywords": ["crypto", "game", "token", "desktop", "electron"],
-  "author": "GameHub Team",
-  "license": "MIT"
-}
-```
+GameHub Vault یک پلتفرم بازی غیرمتمرکز است که با فناوری‌های مدرن توسعه یافته است:
 
----
+قابلیت‌های اصلی:
 
-2. فایل electron.js (روند اصلی):
+· 🎮 سیستم رأی‌دهی برای بازی‌ها
+· 📊 داشبورد مدیریت و آمار
+· 🏆 جدول رده‌بندی بازیکنان
+· 🛒 بازار خرید و فروش آیتم‌های بازی
+· 📱 طراحی واکنش‌گرا
+· 🔗 یکپارچه‌سازی با ENS و IPFS
+· 🤖 پشتیبانی از نوتیفیکیشن
 
-```javascript
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
-const path = require('path');
-const isDev = require('electron-is-dev');
+تکنولوژی‌های استفاده شده:
 
-let mainWindow;
+· Frontend: Next.js 13, TypeScript, Tailwind CSS
+· Backend: API Routes (Next.js)
+· Database: MongoDB (پیش‌فرض)
+· Blockchain: Ethereum, ENS, IPFS
+· Notifications: Telegram, Push Protocol
 
-function createWindow() {
-  // ایجاد پنجره اصلی
-  mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 1200,
-    minHeight: 800,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
-      webSecurity: false
-    },
-    icon: path.join(__dirname, 'public/icon.png'),
-    titleBarStyle: 'default',
-    show: false,
-    backgroundColor: '#1e1b4b'
-  });
+پیش‌نیازها
 
-  // بارگذاری برنامه
-  if (isDev) {
-    mainWindow.loadURL('http://localhost:3000');
-    mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadFile(path.join(__dirname, 'out/index.html'));
-  }
+قبل از نصب، مطمئن شوید سیستم شما دارای این موارد است:
 
-  // نمایش پنجره وقتی آماده شد
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-  });
+نرم‌افزارهای ضروری:
 
-  // منوی اصلی
-  const template = [
-    {
-      label: 'File',
-      submenu: [
-        {
-          label: 'Exit',
-          accelerator: 'CmdOrCtrl+Q',
-          click: () => app.quit()
-        }
-      ]
-    },
-    {
-      label: 'View',
-      submenu: [
-        { role: 'reload' },
-        { role: 'forceReload' },
-        { role: 'toggleDevTools' },
-        { type: 'separator' },
-        { role: 'resetZoom' },
-        { role: 'zoomIn' },
-        { role: 'zoomOut' },
-        { type: 'separator' },
-        { role: 'togglefullscreen' }
-      ]
-    },
-    {
-      label: 'GameHub',
-      submenu: [
-        {
-          label: 'About GameHub Token',
-          click: () => {
-            require('electron').dialog.showMessageBox(mainWindow, {
-              type: 'info',
-              title: 'About',
-              message: 'GameHub Token Desktop',
-              detail: 'Crypto Gaming Platform v1.0.0'
-            });
-          }
-        }
-      ]
-    }
-  ];
+· Node.js (نسخه 18 یا بالاتر)
+· npm یا yarn یا pnpm
+· Git
+· MongoDB (محلی یا ابری)
 
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
-}
-
-// رویدادهای اصلی Electron
-app.whenReady().then(createWindow);
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
-
-// ارتباط با رندرر
-ipcMain.handle('get-app-version', () => {
-  return app.getVersion();
-});
-
-ipcMain.handle('minimize-window', () => {
-  mainWindow.minimize();
-});
-
-ipcMain.handle('maximize-window', () => {
-  if (mainWindow.isMaximized()) {
-    mainWindow.unmaximize();
-  } else {
-    mainWindow.maximize();
-  }
-});
-
-ipcMain.handle('close-window', () => {
-  mainWindow.close();
-});
-```
-
----
-
-3. فایل main.js (ورودی برنامه):
-
-```javascript
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
-
-// تنظیم محیط توسعه
-if (require('electron-is-dev')) {
-  require('electron-reload')(__dirname, {
-    electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
-    hardResetMethod: 'exit'
-  });
-}
-
-require('./electron');
-
-// جلوگیری از اجرای چندین نمونه
-const gotTheLock = app.requestSingleInstanceLock();
-
-if (!gotTheLock) {
-  app.quit();
-} else {
-  app.on('second-instance', () => {
-    // اگر برنامه در حال اجراست، پنجره رو فعال کن
-    const mainWindow = BrowserWindow.getAllWindows()[0];
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
-  });
-}
-```
-
----
-
-4. فایل next.config.js (برای دسکتاپ):
-
-```javascript
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'export',
-  trailingSlash: true,
-  basePath: '',
-  assetPrefix: '',
-  images: {
-    unoptimized: true,
-  },
-  experimental: {
-    appDir: true,
-  },
-  env: {
-    PLATFORM: 'desktop',
-    VERSION: '1.0.0'
-  }
-}
-
-module.exports = nextConfig
-```
-
----
-
-5. اسکریپت build-electron.sh (برای لینوکس/مک):
+بررسی نسخه‌ها:
 
 ```bash
-#!/bin/bash
-
-echo " "
-echo "🖥️  ===================================="
-echo "🎮 GAMEHUB TOKEN - DESKTOP BUILDER"
-echo "🖥️  ===================================="
-echo " "
-
-# Check Node.js
-if ! command -v node &> /dev/null; then
-    echo "❌ Node.js is not installed!"
-    exit 1
-fi
-
-echo "✅ Node.js version: $(node --version)"
-
-# Install dependencies
-echo " "
-echo "📦 Installing dependencies..."
-npm install
-
-if [ $? -ne 0 ]; then
-    echo "❌ npm install failed!"
-    exit 1
-fi
-
-# Build Next.js
-echo " "
-echo "🔨 Building Next.js project..."
-npm run build
-
-if [ $? -ne 0 ]; then
-    echo "❌ Build failed!"
-    exit 1
-fi
-
-# Install Electron dependencies
-echo " "
-echo "⚡ Installing Electron dependencies..."
-npm install electron electron-builder electron-is-dev --save-dev
-
-# Build Electron app
-echo " "
-echo "🏗️  Building Desktop Application..."
-npm run build-electron
-
-if [ $? -eq 0 ]; then
-    echo " "
-    echo "✅ ===================================="
-    echo "🎉 DESKTOP APP BUILT SUCCESSFULLY!"
-    echo "✅ ===================================="
-    echo " "
-    echo "📁 Output files in: ./dist/"
-    echo " "
-    echo "🚀 To run in development:"
-    echo "   npm run electron-dev"
-    echo " "
-else
-    echo "❌ Build failed!"
-    exit 1
-fi
-```
-
----
-
-6. فایل build-windows.bat (برای ویندوز):
-
-```batch
-@echo off
-echo.
-echo 🖥️  ====================================
-echo 🎮 GAMEHUB TOKEN - WINDOWS BUILDER
-echo 🖥️  ====================================
-echo.
-
-:: Check Node.js
-node --version >nul 2>&1
-if errorlevel 1 (
-    echo ❌ Node.js is not installed!
-    pause
-    exit /b 1
-)
-
-echo ✅ Node.js version:
+# بررسی نسخه Node.js
 node --version
 
-echo.
-echo 📦 Installing dependencies...
+# بررسی نسخه npm
+npm --version
+
+# بررسی نسخه Git
+git --version
+```
+
+نصب و راه‌اندازی
+
+روش ۱: نصب خودکار (توصیه شده)
+
+```bash
+# دریافت پروژه
+git clone <repository-url>
+cd gamehub-vault
+
+# اجرای اسکریپت نصب خودکار
+chmod +x install.sh
+./install.sh
+```
+
+روش ۲: نصب دستی
+
+```bash
+# دریافت پروژه
+git clone <repository-url>
+cd gamehub-vault
+
+# نصب وابستگی‌ها
 npm install
+# یا
+yarn install
+# یا
+pnpm install
 
-if errorlevel 1 (
-    echo ❌ npm install failed!
-    pause
-    exit /b 1
-)
-
-echo.
-echo 🔨 Building Next.js project...
-npm run build
-
-if errorlevel 1 (
-    echo ❌ Build failed!
-    pause
-    exit /b 1
-)
-
-echo.
-echo ⚡ Installing Electron dependencies...
-npm install electron electron-builder electron-is-dev --save-dev
-
-echo.
-echo 🏗️  Building Windows Application...
-npm run build-win
-
-if errorlevel 0 (
-    echo.
-    echo ✅ ====================================
-    echo 🎉 WINDOWS APP BUILT SUCCESSFULLY!
-    echo ✅ ====================================
-    echo.
-    echo 📁 Output files in: ./dist/
-    echo.
-    echo 🚀 To run in development:
-    echo    npm run electron-dev
-    echo.
-) else (
-    echo ❌ Build failed!
-)
-
-pause
+# ساخت پوشه‌های ضروری (در صورت نیاز)
+mkdir -p logs uploads temp
 ```
 
----
+پیکربندی
 
-7. فایل pages/index.tsx (آپدیت شده برای دسکتاپ):
+۱. فایل محیطی (Environment Variables)
 
-```tsx
-import React, { useState, useEffect } from 'react';
+فایل .env.local را در ریشه پروژه ایجاد کنید:
 
-const GameHubDesktop: React.FC = () => {
-  const [balance, setBalance] = useState(9692043.00);
-  const [dailyFlecenium, setDailyFlecenium] = useState(9692043.00);
-  const [monthlyLimit, setMonthlyLimit] = useState(50000000.00);
-  const [isOnline, setIsOnline] = useState(true);
-  const [appVersion, setAppVersion] = useState('1.0.0');
+```env
+# پایگاه داده
+MONGODB_URI=mongodb://localhost:27017/gamehub-vault
+# یا برای MongoDB Atlas
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/gamehub-vault
 
-  useEffect(() => {
-    // Check online status
-    setIsOnline(navigator.onLine);
-    
-    // Listen for online/offline events
-    window.addEventListener('online', () => setIsOnline(true));
-    window.addEventListener('offline', () => setIsOnline(false));
-    
-    // Get app version from Electron
-    if ((window as any).electronAPI) {
-      (window as any).electronAPI.getAppVersion().then((version: string) => {
-        setAppVersion(version);
-      });
-    }
+# کلیدهای API
+ETHERSCAN_API_KEY=your_etherscan_api_key
+INFURA_PROJECT_ID=your_infura_project_id
+ALCHEMY_API_KEY=your_alchemy_api_key
 
-    return () => {
-      window.removeEventListener('online', () => setIsOnline(true));
-      window.removeEventListener('offline', () => setIsOnline(false));
-    };
-  }, []);
+# شبکه بلاکچین
+NEXT_PUBLIC_NETWORK=mainnet
+# یا برای تست‌نت
+NEXT_PUBLIC_NETWORK=goerli
 
-  const menuItems = [
-    { icon: '💰', label: 'Deposit', color: 'from-green-500 to-emerald-500' },
-    { icon: '📤', label: 'Withdraw', color: 'from-red-500 to-pink-500' },
-    { icon: '🔄', label: 'Internal', color: 'from-blue-500 to-cyan-500' },
-    { icon: '👑', label: 'Membership', color: 'from-yellow-500 to-amber-500' },
-    { icon: '📲', label: 'Transfer', color: 'from-purple-500 to-indigo-500' },
-    { icon: '⬆️', label: 'Upgrade', color: 'from-orange-500 to-red-500' },
-  ];
+# ENS
+NEXT_PUBLIC_ENS_RPC=https://mainnet.infura.io/v3/your_project_id
 
-  const quickActions = [
-    { label: 'Family #1', value: 'USDT', color: 'text-cyan-400' },
-    { label: 'Service', value: 'Annual Yield', color: 'text-green-400' },
-    { label: '9 cx*** recharge', value: 'Participate Now', color: 'text-yellow-400' },
-  ];
+# IPFS
+NEXT_PUBLIC_IPFS_GATEWAY=https://ipfs.io/ipfs/
+IPFS_API_URL=https://ipfs.infura.io:5001
+IPFS_PROJECT_ID=your_ipfs_project_id
+IPFS_PROJECT_SECRET=your_ipfs_secret
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
+# تلگرام
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
 
-  const handleWindowControl = (action: string) => {
-    if ((window as any).electronAPI) {
-      (window as any).electronAPI[action]();
-    }
-  };
+# Push Protocol
+PUSH_PROTOCOL_API_KEY=your_push_protocol_api_key
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
-      {/* Custom Title Bar */}
-      <div className="bg-black/50 backdrop-blur-lg border-b border-white/10 drag-region">
-        <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-          <div className="flex items-center space-x-2 no-drag">
-            <div className="w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs">G</span>
-            </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              CRYPBYU
-            </span>
-            <span className="text-gray-400 text-sm">v{appVersion}</span>
-          </div>
-          
-          <div className="text-center">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
-              GAMEHUB TOKEN
-            </h1>
-          </div>
-          
-          <div className="flex items-center space-x-1 no-drag">
-            <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <button 
-              onClick={() => handleWindowControl('minimizeWindow')}
-              className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded transition-colors"
-            >
-              <span className="text-lg">−</span>
-            </button>
-            <button 
-              onClick={() => handleWindowControl('maximizeWindow')}
-              className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded transition-colors"
-            >
-              <span className="text-lg">□</span>
-            </button>
-            <button 
-              onClick={() => handleWindowControl('closeWindow')}
-              className="w-8 h-8 flex items-center justify-center hover:bg-red-500 rounded transition-colors"
-            >
-              <span className="text-lg">×</span>
-            </button>
-          </div>
-        </div>
-      </div>
+# کلیدهای امنیتی
+NEXTAUTH_SECRET=your_nextauth_secret_here
+NEXTAUTH_URL=http://localhost:3000
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        {/* User Greeting */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-light mb-2">Hi, Khalil 👋</h2>
-          <p className="text-gray-300">Welcome to GameHub Desktop</p>
-        </div>
-
-        {/* Balance Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:border-cyan-400/50 transition-all duration-300">
-            <h3 className="text-gray-300 text-sm mb-2">Available Balance</h3>
-            <div className="text-3xl font-bold text-cyan-400">
-              {formatCurrency(balance)} USDT
-            </div>
-            <div className="text-green-400 text-xs mt-2">↑ +2.5% today</div>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:border-green-400/50 transition-all duration-300">
-            <h3 className="text-gray-300 text-sm mb-2">Daily Flecenium</h3>
-            <div className="text-3xl font-bold text-green-400">
-              {formatCurrency(dailyFlecenium)} USDT
-            </div>
-            <div className="text-cyan-400 text-xs mt-2">🔄 Updates daily</div>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:border-yellow-400/50 transition-all duration-300">
-            <h3 className="text-gray-300 text-sm mb-2">Monthly Receiving Limit</h3>
-            <div className="text-3xl font-bold text-yellow-400">
-              {formatCurrency(monthlyLimit)} USDT
-            </div>
-            <div className="text-gray-400 text-xs mt-2">Resets in 15 days</div>
-          </div>
-        </div>
-
-        {/* Menu Grid */}
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          {menuItems.map((item, index) => (
-            <button
-              key={index}
-              className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 hover:bg-white/20 hover:scale-105 transition-all duration-200 group"
-            >
-              <div className="text-2xl mb-2 transform group-hover:scale-110 transition-transform duration-200">
-                {item.icon}
-              </div>
-              <div className="text-sm font-medium">{item.label}</div>
-            </button>
-          ))}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {quickActions.map((action, index) => (
-            <div
-              key={index}
-              className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300"
-            >
-              <div className="text-gray-300 text-sm mb-2">{action.label}</div>
-              <div className={`text-xl font-semibold ${action.color}`}>
-                {action.value}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Desktop Status Bar */}
-        <div className="mt-8 text-center text-gray-400 text-sm">
-          <p>GameHub Token Desktop v{appVersion} • {isOnline ? 'Online' : 'Offline'} • Secure Crypto Gaming</p>
-        </div>
-      </main>
-
-      {/* Global Styles */}
-      <style jsx global>{`
-        body {
-          margin: 0;
-          padding: 0;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: linear-gradient(135deg, #1e1b4b 0%, #1e40af 50%, #3730a3 100%);
-          user-select: none;
-        }
-        
-        .drag-region {
-          -webkit-app-region: drag;
-        }
-        
-        .no-drag {
-          -webkit-app-region: no-drag;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.1);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: rgba(139, 92, 246, 0.5);
-          border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-          background: rgba(139, 92, 246, 0.7);
-        }
-      `}</style>
-    </div>
-  );
-};
-
-export default GameHubDesktop;
+# سایر تنظیمات
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+MAX_FILE_SIZE=10485760
 ```
 
----
+۲. پیکربندی MongoDB
 
-8. فایل public/manifest.json:
+```bash
+# اگر از MongoDB محلی استفاده می‌کنید
+sudo systemctl start mongod
+# یا
+brew services start mongodb/brew/mongodb-community
+```
+
+۳. پیکربندی مانفیست PWA
+
+فایل public/manifest.json را بررسی کنید:
 
 ```json
 {
-  "name": "GameHub Token Desktop",
-  "short_name": "GAMEHUB",
-  "description": "Crypto Gaming Token Platform - Desktop Edition",
-  "version": "1.0.0",
-  "author": "GameHub Team"
+  "name": "GameHub Vault",
+  "short_name": "GameHub",
+  "description": "Decentralized Gaming Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a202c",
+  "theme_color": "#3182ce",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
 ```
 
+اجرا
+
+حالت توسعه (Development)
+
+```bash
+# اجرای سرور توسعه
+npm run dev
+# یا
+yarn dev
+# یا
+pnpm dev
+
+# برنامه در آدرس زیر قابل دسترسی خواهد بود:
+# http://localhost:3000
+```
+
+حالت تولید (Production)
+
+```bash
+# ساخت نسخه تولید
+npm run build
+
+# اجرای نسخه تولید
+npm start
+# یا
+yarn start
+```
+
+اجرای همراه با PM2 (برای سرور)
+
+```bash
+# نصب PM2
+npm install -g pm2
+
+# اجرای برنامه با PM2
+pm2 start npm --name "gamehub-vault" -- start
+
+# مدیریت فرآیندها
+pm2 status
+pm2 logs gamehub-vault
+pm2 restart gamehub-vault
+```
+
+تست
+
+اجرای تست‌ها
+
+```bash
+# تست‌های واحد
+npm run test
+
+# تست‌های E2E
+npm run test:e2e
+
+# تست با coverage
+npm run test:coverage
+```
+
+تست دستی قابلیت‌ها
+
+۱. صفحه اصلی: بررسی نمایش صحیح Splash Screen
+۲.داشبورد: ورود و مشاهده آمار
+۳.سیستم رأی‌دهی: ثبت رأی و مشاهنت نتایج
+۴.بازار: مشاهده و جستجوی آیتم‌ها
+۵.جدول رده‌بندی: مشاهده رتبه‌بندی بازیکنان
+
+استقرار
+
+استقرار روی Vercel (توصیه شده)
+
+```bash
+# نصب Vercel CLI
+npm i -g vercel
+
+# استقرار
+vercel --prod
+```
+
+استقرار روی Netlify
+
+```bash
+# ساخت پروژه
+npm run build
+
+# آپلود پوشه out روی Netlify
+```
+
+استقرار روی سرور اختصاصی
+
+```bash
+# کپی فایل‌ها روی سرور
+scp -r ./gamehub-vault user@server:/path/to/app
+
+# نصب وابستگی‌ها
+cd /path/to/app/gamehub-vault
+npm install --production
+
+# ساخت و اجرا
+npm run build
+npm start
+```
+
+عیب‌یابی
+
+مشکلات رایج و راه‌حل‌ها
+
+۱. خطای اتصال به MongoDB
+
+```
+Error: Could not connect to MongoDB
+```
+
+راه‌حل:
+
+· مطمئن شوید MongoDB در حال اجراست
+· رشته اتصال را در .env.local بررسی کنید
+· پورت 27017 باز باشد
+
+۲. خطای وابستگی‌ها
+
+```
+Module not found
+```
+
+راه‌حل:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+۳. خطای ساخت
+
+```
+Build failed
+```
+
+راه‌حل:
+
+· TypeScript errors را بررسی کنید
+· مطمئن شوید تمام فایل‌های ضروری موجودند
+· لاگ ساخت را بررسی کنید
+
+۴. مشکل در API Routes
+
+```
+API route not working
+```
+
+راه‌حل:
+
+· مطمئن شوید فایل‌ها در pages/api/ قرار دارند
+· middlewareها را بررسی کنید
+· console.log را برای دیباگ اضافه کنید
+
+لاگ‌ها و مانیتورینگ
+
+```bash
+# مشاهده لاگ‌های برنامه
+npm run logs
+# یا
+tail -f logs/app.log
+
+# مانیتورینگ منابع
+npm run monitor
+```
+
+نگهداری و به‌روزرسانی
+
+به‌روزرسانی وابستگی‌ها
+
+```bash
+# بررسی وابستگی‌های قدیمی
+npm outdated
+
+# به‌روزرسانی وابستگی‌ها
+npm update
+
+# به‌روزرسانی Next.js
+npm install next@latest
+```
+
+پشتیبان‌گیری
+
+```bash
+# اسکریپت پشتیبان‌گیری از دیتابیس
+npm run backup
+
+# پشتیبان‌گیری دستی
+mongodump --uri="mongodb://localhost:27017/gamehub-vault"
+```
+
+ساختار پروژه
+
+```
+gamehub-vault/
+├── public/          # فایل‌های استاتیک
+├── pages/           # صفحات و API routes
+├── components/      # کامپوننت‌های ری‌اکت
+├── lib/             # utilities و کتابخانه‌ها
+├── models/          # مدل‌های دیتابیس
+├── styles/          # استایل‌ها
+├── install.sh       # اسکریپت نصب
+└── README.md        # مستندات
+```
+
+پشتیبانی
+
+در صورت بروز مشکل:
+
+۱. مستندات: این فایل را مطالعه کنید
+۲.Issues: مشکلات را در GitHub گزارش دهید
+۳.Community: از جامعه توسعه‌دهندگان کمک بگیرید
+
+مجوز
+
+این پروژه تحت مجوز [MIT License] منتشر شده است.
+
 ---
 
-🚀 دستورات اجرا:
-
-برای ویندوز:
-
-```batch
-# دانلود فایل‌ها در پوشه gamehub-token-desktop
-# سپس:
-build-windows.bat
-```
-
-برای لینوکس/مک:
-
-```bash
-chmod +x build-electron.sh
-./build-electron.sh
-```
-
-اجرای نسخه توسعه:
-
-```bash
-npm run dev
-# در ترمینال دیگر:
-npm run electron-dev
-```
-
-📦 خروجی:
-
-· Windows: *.exe در پوشه dist/
-· macOS: *.dmg در پوشه dist/
-· Linux: *.AppImage در پوشه dist/
-
-برنامه دسکتاپ شما آماده است! 🎮# Gamehub-vault
+توسعه داده شده با ❤️ برای جامعه بازی‌های غیرمتمرکز
