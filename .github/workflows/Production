@@ -1,0 +1,7 @@
+# ساخت نسخه تولید
+npm run build
+
+# اجرای نسخه تولید
+npm start
+# یا
+yarn start
