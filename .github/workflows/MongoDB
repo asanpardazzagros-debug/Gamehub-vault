@@ -1,0 +1,4 @@
+# اگر از MongoDB محلی استفاده می‌کنید
+sudo systemctl start mongod
+# یا
+brew services start mongodb/brew/mongodb-community
